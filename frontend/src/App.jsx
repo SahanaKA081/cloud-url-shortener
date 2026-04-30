@@ -21,7 +21,7 @@ function App() {
 
     try {
       // Send request to backend
-      const response = await axios.post('http://localhost:5000/api/url/shorten', { originalUrl: url })
+      const response = await axios.post('/api/url/shorten', { originalUrl: url })
       setResult(response.data)
     } catch (err) {
       if (err.response && err.response.status === 403) {

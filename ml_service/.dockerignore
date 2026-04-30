@@ -1,0 +1,10 @@
+# Python virtual environment and cache
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Keep the trained model files (needed for deployment)
+# url_model_advanced.pkl  ← DO NOT ignore this

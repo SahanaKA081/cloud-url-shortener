@@ -1,0 +1,32 @@
+# Ignore large directories that Docker doesn't need
+node_modules
+**/node_modules
+npm-debug.log
+
+# Python virtual env & cache
+ml_service/venv
+ml_service/__pycache__
+**/__pycache__
+*.pyc
+
+# Frontend source (we only need the built dist/)
+# (frontend source IS needed for the build stage, so we don't exclude it)
+
+# Git
+.git
+.gitignore
+
+# Logs
+*.log
+
+# Environment files (secrets injected by HF)
+.env
+**/.env
+
+# Dev/editor files
+.vscode
+.DS_Store
+Thumbs.db
+
+# ML service files (not needed in the app Space)
+ml_service/

@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -15,21 +16,28 @@ mongoose.connect(DB_URI)
 .then(() => console.log('MongoDB connected successfully'))
 .catch(err => console.error('MongoDB connection error:', err));
 
-// Routes
+// Health check (used by Docker HEALTHCHECK)
+app.get('/api/url/health', (req, res) => res.json({ status: 'ok' }));
+
+// API Routes
 app.use('/api/url', require('./routes/urlRoutes'));
 
-// Redirection Route
+// Redirection Route (must come before static serving catch-all)
 const Url = require('./models/Url');
-app.get('/:shortId', async (req, res) => {
+app.get('/:shortId', async (req, res, next) => {
+  // Skip if it looks like a static asset or API path
+  const { shortId } = req.params;
+  if (shortId === 'index.html' || shortId.includes('.')) {
+    return next();
+  }
   try {
-    const url = await Url.findOne({ shortId: req.params.shortId });
+    const url = await Url.findOne({ shortId });
     if (url) {
-      // Increment click count
       url.clicks++;
       await url.save();
       return res.redirect(url.originalUrl);
     } else {
-      return res.status(404).json({ error: 'URL not found' });
+      return next(); // Let React handle 404
     }
   } catch (err) {
     console.error(err);
@@ -37,7 +45,17 @@ app.get('/:shortId', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
+// Serve React Frontend static build (production)
+const frontendBuildPath = path.join(__dirname, '../frontend/dist');
+app.use(express.static(frontendBuildPath));
+
+// Catch-all: send React app for any unmatched routes (Express 5 compatible)
+app.get('/{*splat}', (req, res) => {
+  res.sendFile(path.join(frontendBuildPath, 'index.html'));
+});
+
+const PORT = process.env.PORT || 7860;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
