@@ -55,7 +55,10 @@ router.post('/shorten', async (req, res) => {
     await url.save();
     res.json(url);
   } catch (err) {
-    console.error(err);
+    console.error('Route error:', err.message);
+    if (err.name === 'MongooseServerSelectionError' || err.name === 'MongoNetworkError') {
+      return res.status(503).json({ error: 'Database unavailable. Please try again shortly.' });
+    }
     res.status(500).json({ error: 'Server error' });
   }
 });

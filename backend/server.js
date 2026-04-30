@@ -10,11 +10,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Database connection
+// Database connection (5s timeout so the server fails fast if DB is unreachable)
 const DB_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/url_shortener';
-mongoose.connect(DB_URI)
+mongoose.connect(DB_URI, {
+  serverSelectionTimeoutMS: 5000,
+  connectTimeoutMS: 5000,
+})
 .then(() => console.log('MongoDB connected successfully'))
-.catch(err => console.error('MongoDB connection error:', err));
+.catch(err => console.error('MongoDB connection error:', err.message));
 
 // Health check (used by Docker HEALTHCHECK)
 app.get('/api/url/health', (req, res) => res.json({ status: 'ok' }));
